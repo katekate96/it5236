@@ -16,18 +16,18 @@ $errors = array();
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>Katelyn's Discussion Board</title>
-	<meta name="description" content="Russell Thackston's personal website for IT 5236">
-	<meta name="author" content="Russell Thackston">
+	<title>upoutandabouttravel.com</title>
+	<meta name="description" content="Up, Out, and About Travel Discussion Site">
+	<meta name="author" content="Katelyn Greer">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 	<link rel="stylesheet" href="css/style.css">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 </head>
 <body>
 	<?php include 'include/header.php'; ?>
-	<h2>Mobile Web Infrastructure</h2>
 	<p>
-		This is a bare-bones "list-oriented" web application for use in IT 5236, to teach mobile web infrastructure concepts.
-		Students currently registered for the course may <a href="login.php">create an account</a> or proceed directly to the 
+		Welcome to Up, Out, & About Travel! This is a discussion board to gain advice about popular travel destinations. You can <a href="login.php">create an account</a> or proceed directly to the 
 		<a href="login.php">login page</a>.
 	</p>
 	<?php include 'include/footer.php'; ?>

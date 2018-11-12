@@ -3,6 +3,8 @@ body {
 }
 
 div.nav {
+	text-decoration: none;
+	color: #2F322A;
 	float: right;
 	padding: 20px;
 }

@@ -1,1 +1,5 @@
-This is the help file for my wonderful application. I should add something to it.
+1. Enter a destination you are looking for more information on.
+
+2. Check back for comments with other user's experiences.
+
+3. Have a great vacation!
