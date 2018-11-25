@@ -179,7 +179,7 @@ class Application {
 
 				} else if($httpCode == 200) {
 
-					// $this->sendValidationEmail($userid, $email, $errors);
+					 //$this->sendValidationEmail($userid, $email, $errors);
 
 				}
 
@@ -338,6 +338,81 @@ class Application {
         }
     }
     */
+	/*
+	protected function sendValidationEmail($userid, $email, &$errors) {
+
+      $url = "https://eaiqac5v8c.execute-api.us-east-1.amazonaws.com/default/sendValidationEmail";
+      $data = array(
+        'emailvalidationid'=>$emailvalidationid,
+        'userid'=>$userid,
+        'email'=>$email,
+        'emailsent'=>$emailsent
+      );
+      $data_json = json_encode($data);
+
+      $ch = curl_init();
+      curl_setopt($ch, CURLOPT_URL, $url);
+      curl_setopt($ch, CURLOPT_HTTPHEADER, array('x-api-key  : ...'));
+      curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+      curl_setopt($ch, CURLOPT_POSTFIELDS, $data_json);
+      curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+      $response  = curl_exec($ch);
+      $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+      if ($response === FALSE) {
+        $errors[] = "An unexpected failure occurred contacting the web service.";
+      } else {
+
+        if($httpCode == 400) {
+
+          // JSON was double-encoded, so it needs to be double decoded
+          $errorsList = json_decode(json_decode($response))->errors;
+          foreach ($errorsList as $err) {
+            $errors[] = $err;
+          }
+          if (sizeof($errors) == 0) {
+            $errors[] = "Bad input";
+          }
+
+        } else if($httpCode == 500) {
+
+          $errorsList = json_decode(json_decode($response))->errors;
+          foreach ($errorsList as $err) {
+            $errors[] = $err;
+          }
+          if (sizeof($errors) == 0) {
+            $errors[] = "Server error";
+          }
+
+        } else if($httpCode == 200) {
+
+          // $this->sendValidationEmail($userid, $email, $errors);
+
+
+            $this->auditlog("sendValidationEmail", "Sending message to $email");
+
+            // Send reset email
+            $pageLink = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+            $pageLink = str_replace("register.php", "login.php", $pageLink);
+            $to      = $email;
+            $subject = 'Confirm your email address';
+            $message = "A request has been made to create an account at https://upoutandabouttravel.com for this email address. ".
+                "If you did not make this request, please ignore this message. No other action is necessary. ".
+                "To confirm this address, please click the following link: $pageLink?id=$validationid";
+            $headers = 'From: webmaster@upoutandabouttravel.com' . "\r\n" .
+                'Reply-To: webmaster@upoutandabouttravel.com' . "\r\n";
+
+            mail($to, $subject, $message, $headers);
+
+            $this->auditlog("sendValidationEmail", "Message sent to $email");
+
+        }
+
+        curl_close($ch);
+    }
+  }
+	*/
+	
     // Send an email to validate the address
     protected function sendValidationEmail($userid, $email, &$errors) {
         
@@ -371,11 +446,11 @@ class Application {
             $pageLink = str_replace("register.php", "login.php", $pageLink);
             $to      = $email;
             $subject = 'Confirm your email address';
-            $message = "A request has been made to create an account at https://russellthackston.me for this email address. ".
+            $message = "A request has been made to create an account at https://upoutandabouttravel.comfor this email address. ".
                 "If you did not make this request, please ignore this message. No other action is necessary. ".
                 "To confirm this address, please click the following link: $pageLink?id=$validationid";
-            $headers = 'From: webmaster@russellthackston.me' . "\r\n" .
-                'Reply-To: webmaster@russellthackston.me' . "\r\n";
+            $headers = 'From: webmaster@upoutandabouttravel.com' . "\r\n" .
+                'Reply-To: webmaster@upoutandabouttravel.com' . "\r\n";
             
             mail($to, $subject, $message, $headers);
             
@@ -599,6 +674,78 @@ class Application {
         return $success;
         
     }
+	/*
+	public function newSession($userid, &$errors) {
+        
+        $this->auditlog("newSession", "attempt: $usersessionid, $userid");
+        
+        
+        // Only try to insert the data into the database if there are no validation errors
+        if (sizeof($errors) == 0) {
+            
+           // Create a new session ID
+            $sessionid = bin2hex(random_bytes(25));
+			
+			$url = "https://eaiqac5v8c.execute-api.us-east-1.amazonaws.com/default/newSession";
+			$data = array(
+				'usersessionid'=>$usersessionid,
+				'userid'=>$userid,
+				'expires'=>$expires,
+				'registrationcode'=>$registrationcode
+			);
+			$data_json = json_encode($data);
+			
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $url);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json','Content-Length: ' . strlen($data_json)));
+			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $data_json);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			$response  = curl_exec($ch);
+			$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+			$this->debug($response);
+			$this->auditlog("addThing", "response = : $response");
+
+			if ($response === FALSE) {
+				$errors[] = "An unexpected failure occurred contacting the web service.";
+			} else {
+
+				if($httpCode == 400) {
+					
+					// JSON was double-encoded, so it needs to be double decoded
+					$errorsList = json_decode(json_decode($response))->errors;
+					foreach ($errorsList as $err) {
+						$errors[] = $err;
+					}
+					if (sizeof($errors) == 0) {
+						$errors[] = "Bad input";
+					}
+
+				} else if($httpCode == 500) {
+
+					$errorsList = json_decode(json_decode($response))->errors;
+					foreach ($errorsList as $err) {
+						$errors[] = $err;
+					}
+					if (sizeof($errors) == 0) {
+						$errors[] = "Server error";
+					}
+
+				} else if($httpCode == 200) {
+					// Store the session ID as a cookie in the browser
+					setcookie('sessionid', $sessionid, time()+60*60*24*30);
+					$this->auditlog("session", "new session id: $sessionid for user = $userid");
+
+				}
+
+			}
+			
+			curl_close($ch);
+			return $usersessionid;
+
+        } 
+    }
+	*/
     
     // Creates a new session in the database for the specified user
     public function newSession($userid, &$errors, $registrationcode = NULL) {
@@ -1550,6 +1697,115 @@ class Application {
         
     }
     */
+	/*
+	public function saveAttachment($attachmentid, &$errors) {
+        
+        $this->auditlog("saveAttachment", "attempt: $attachmentid, $attachment");
+        
+		$attachmentid = NULL;
+        
+        // Check for an attachment
+        if (isset($attachment) && isset($attachment['name']) && !empty($attachment['name'])) {
+            
+            // Get the list of valid attachment types and file extensions
+            $attachmenttypes = $this->getAttachmentTypes($errors);
+            
+            // Construct an array containing only the 'extension' keys
+            $extensions = array_column($attachmenttypes, 'extension');
+            
+            // Get the uploaded filename
+            $filename = $attachment['name'];
+            
+            // Extract the uploaded file's extension
+            $dot = strrpos($filename, ".");
+            
+            // Make sure the file has an extension and the last character of the name is not a "."
+            if ($dot !== FALSE && $dot != strlen($filename)) {
+                
+                // Check to see if the uploaded file has an allowed file extension
+                $extension = strtolower(substr($filename, $dot + 1));
+                if (!in_array($extension, $extensions)) {
+                    
+                    // Not a valid file extension
+                    $errors[] = "File does not have a valid file extension";
+                    $this->auditlog("saveAttachment", "invalid file extension: $filename");
+                    
+                }
+                
+            } else {
+                
+                // No file extension -- Disallow
+                $errors[] = "File does not have a valid file extension";
+                $this->auditlog("saveAttachment", "no file extension: $filename");
+                
+            }
+        
+        // Only try to insert the data into the database if there are no validation errors
+        if (sizeof($errors) == 0) {
+			
+			// Create a new ID
+            $attachmentid = bin2hex(random_bytes(16));
+			
+			$url = "https://eaiqac5v8c.execute-api.us-east-1.amazonaws.com/default/saveAttachment";
+			$data = array(
+				'attachmentid'=>$attachmentid,
+				'filename'=>$filename
+			);
+			$data_json = json_encode($data);
+			
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $url);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json','Content-Length: ' . strlen($data_json)));
+			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $data_json);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			$response  = curl_exec($ch);
+			$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+			$this->debug($response);
+			$this->auditlog("saveAttachment", "response = : $response");
+
+			if ($response === FALSE) {
+				$errors[] = "An unexpected failure occurred contacting the web service.";
+			} else {
+
+				if($httpCode == 400) {
+					
+					// JSON was double-encoded, so it needs to be double decoded
+					$errorsList = json_decode(json_decode($response))->errors;
+					foreach ($errorsList as $err) {
+						$errors[] = $err;
+					}
+					if (sizeof($errors) == 0) {
+						$errors[] = "Bad input";
+					}
+
+				} else if($httpCode == 500) {
+
+					$errorsList = json_decode(json_decode($response))->errors;
+					foreach ($errorsList as $err) {
+						$errors[] = $err;
+					}
+					if (sizeof($errors) == 0) {
+						$errors[] = "Server error";
+					}
+
+				} else if($httpCode == 200) {
+					 // Move the file from temp folder to html attachments folder
+                    move_uploaded_file($attachment['tmp_name'], getcwd() . '/attachments/' . $attachmentid . '-' . $attachment['name']);
+                    $attachmentname = $attachment["name"];
+                    $this->auditlog("saveAttachment", "success: $attachmentname");
+
+				}
+
+			}
+			
+			curl_close($ch);
+			return $attachmentid;
+
+        } 
+    }
+	*/
+	
     // Handles the saving of uploaded attachments and the creation of a corresponding record in the attachments table.
     public function saveAttachment($dbh, $attachment, &$errors) {
         
@@ -1629,14 +1885,16 @@ class Application {
         return $attachmentid;
         
     }
-    /*
-	public function addThing( &$errors) {
+    
+	public function addThing($thingname, $attachment, &$errors) {
+        
+        $this->auditlog("addThing", "attempt: $thingname, $attachment");
         
         
         // Only try to insert the data into the database if there are no validation errors
-        if (sizeof($errors) == 0) {  
-		
-			$user = $this->getSessionUser($errors);
+        if (sizeof($errors) == 0) {
+            
+            $user = $this->getSessionUser($errors);
 			$userid = $user["userid"];
 			$registrationcode = $user["registrationcode"];
 			$thingid = bin2hex(random_bytes(16));
@@ -1645,9 +1903,9 @@ class Application {
 			$data = array(
 				'thingid'=>$thingid,
 				'thingname'=>$thingname,
-				'thinguserid'=>$userid,
-				'thingattachmentid'=>$attachmentid,
-				'thingregistrationcode'=>$registrationcode
+				'userid'=>$userid,
+				'attachmentid'=>$attachmentid,
+				'registrationcode'=>$registrationcode
 			);
 			$data_json = json_encode($data);
 			
@@ -1660,8 +1918,7 @@ class Application {
 			$response  = curl_exec($ch);
 			$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 			$this->debug($response);
-			$this->auditlog("addThings", "response = : $response");
-			
+			$this->auditlog("addThing", "response = : $response");
 
 			if ($response === FALSE) {
 				$errors[] = "An unexpected failure occurred contacting the web service.";
@@ -1689,27 +1946,19 @@ class Application {
 					}
 
 				} else if($httpCode == 200) {
-
-					// $this->sendValidationEmail($userid, $email, $errors);
+					 $this->auditlog("addthing", "success: $name, id = $thingid");
 
 				}
 
 			}
 			
 			curl_close($ch);
+			return $thingid;
 
-        } else {
-            $this->auditlog("addThing", $errors);
-        }
-        
-        // Return TRUE if there are no errors, otherwise return FALSE
-        if (sizeof($errors) == 0){
-            return TRUE;
-        } else {
-            return FALSE;
-        }
+        } 
     }
-	*/
+	
+	/*
     // Adds a new thing to the database
     public function addThing($name, $attachment, &$errors) {
         
@@ -1781,35 +2030,40 @@ class Application {
             return FALSE;
         }
     }
-    /*
-	public function addComment($text, $thingid, $attachment, &$errors) {
+	*/
+    public function addComment($commenttext, $thingid, $attachment, &$errors) {
+        
+        $this->auditlog("addComment", "attempt: $commenttext, $attachment");
+        
         
         // Only try to insert the data into the database if there are no validation errors
         if (sizeof($errors) == 0) {
             
-			// Get the user id from the session
+              // Get the user id from the session
 			$user = $this->getSessionUser($errors);
 			$userid = $user["userid"];
 			$commentid = bin2hex(random_bytes(16));
 			
+			$url = "https://eaiqac5v8c.execute-api.us-east-1.amazonaws.com/default/addComment";
 			$data = array(
 				'commentid'=>$commentid,
 				'commenttext'=>$commenttext,
-				'commentuserid'=>$userid,
-				'commentthingid'=>$thingid,
-				'commentattachmentid'=>$attachmentid
+				'userid'=>$userid,
+				'thingid'=>$thingid,
+				'attachmentid'=>$attachmentid
 			);
 			$data_json = json_encode($data);
 			
-			$url = "https://eaiqac5v8c.execute-api.us-east-1.amazonaws.com/default/addComment";
 			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_URL, $url);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json','Content-Length: ' . strlen($data_json)));
 			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $data_json);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			$response  = curl_exec($ch);
 			$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 			$this->debug($response);
-			$this->auditlog("addComments", "response = : $response");
+			$this->auditlog("addComment", "response = : $response");
 
 			if ($response === FALSE) {
 				$errors[] = "An unexpected failure occurred contacting the web service.";
@@ -1837,25 +2091,18 @@ class Application {
 					}
 
 				} else if($httpCode == 200) {
+					 $this->auditlog("addcomment", "success: $commenttext, id = $commentid");
 
-				
-				
 				}
 
 			}
 			
 			curl_close($ch);
+			return $commentid;
 
         } 
-        // Return TRUE if there are no errors, otherwise return FALSE
-        if (sizeof($errors) == 0){
-            return TRUE;
-        } else {
-            return FALSE;
-        }
     }
-	
-*/
+	/*
     // Adds a new comment to the database
     public function addComment($text, $thingid, $attachment, &$errors) {
         
@@ -1927,7 +2174,7 @@ class Application {
             return FALSE;
         }
     }
-    
+   */ 
 	public function getUsers(&$errors) {
         
 		$url = "https://eaiqac5v8c.execute-api.us-east-1.amazonaws.com/default/getUsers";
@@ -2333,7 +2580,7 @@ class Application {
     }
 	
 	
-    /*
+    
 	public function newAttachmentType($name, $extension, &$errors) {
         
         $this->auditlog("newAttachmentType", "attempt: $name, $extension");
@@ -2352,12 +2599,10 @@ class Application {
 				'extension'=>$extension
 			);
 			$data_json = json_encode($data);
-			$apiKey = 'wyKMqDIluT5ehCL3SIiqP82NGQBXX5ZO8wqNHvg0';
-			$headers = array('Authorization: '.$apiKey);
 			
 			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_URL, $url);
-			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json','Content-Length: ' . strlen($data_json), $headers));
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json','Content-Length: ' . strlen($data_json)));
 			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $data_json);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -2391,7 +2636,6 @@ class Application {
 
 				} else if($httpCode == 200) {
 
-					// $this->sendValidationEmail($userid, $email, $errors);
 
 				}
 
@@ -2403,7 +2647,7 @@ class Application {
         } 
     }
        
-    */
+    /*
 	
 	
     // Creates a new session in the database for the specified user
@@ -2458,7 +2702,7 @@ class Application {
         
         return $attachmenttypeid;
     }
-    
+  */  
 }
 
 
